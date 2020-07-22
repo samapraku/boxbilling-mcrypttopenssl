@@ -53,18 +53,6 @@ class McryptOpenSSL
         return true;
     }
 
-    // convert extension configurations from mcrypt to openssl
-    public function extension_config_to_openssl(){       
-        $db = $this->di['db'];
-        $configs = $this->di['db']->find('ExtensionMeta', 'meta_key = :key AND (meta_value IS NOT NULL AND meta_value <> \'\')', array(':key'=>'config'));
-        $extService = $this->di['mod_service']('extension');
-        foreach($configs as $config){
-            $data = $extService->getConfig($config->extension);           
-            $this->setConfig($data);
-        }
-        return true;      
-    }
-
     private function setConfig($data)
     {
         $this->di['events_manager']->fire(array('event'=>'onBeforeAdminExtensionConfigSave', 'params'=>$data));
@@ -83,11 +71,42 @@ class McryptOpenSSL
             'ext'        => $data['ext'],
             'config'     => $config,
         );
-        $this->di['db']->exec($sql, $params);
+
+        try {
+            $this->di['db']->exec($sql, $params);
+        } catch(Exception $e) {
+            throw new Exception($e->getMessage());
+        }
         $this->di['events_manager']->fire(array('event'=>'onAfterAdminExtensionConfigSave', 'params'=>$data));
         $this->di['logger']->info('Updated extension "%s" configuration', $data['ext']);
 
         return true;
     }
 
+    private function execSql($sql)
+    {
+        try {
+            $this->di['db']->exec($sql);
+        } catch(Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+    // convert extension configurations from mcrypt to openssl
+    public function extension_config_to_openssl(){   
+        $configs = $this->di['db']->find('ExtensionMeta', 'meta_key = :key AND (meta_value IS NOT NULL AND meta_value <> \'\')', array(':key'=>'config'));
+        $extService = $this->di['mod_service']('extension');
+        foreach($configs as $config){
+            $data = $extService->getConfig($config->extension);           
+            $this->setConfig($data);
+        }
+        return true;      
+    }
+
+    // Update 'filter' tags in email templates
+    public function update_filter_tag(){     
+        $sql = "UPDATE email_template SET  content = REPLACE(REPLACE(content,'filter markdown','apply markdown'),'endfilter','endapply')";
+        $this->execSql($sql);
+        return true;      
+    }
+    
 }

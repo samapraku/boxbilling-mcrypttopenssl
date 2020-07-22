@@ -15,10 +15,16 @@ require_once dirname(dirname(__FILE__)) . '/bb-load.php';
 $di = include dirname(dirname(__FILE__)) . '/bb-di.php';
 include dirname(__FILE__) . '/McryptOpenSSL.php';
 include dirname(__FILE__) . '/CryptOpenSSL.php';
-$di['translate']();
 
 $service = new McryptOpenSSL($di);
+echo nl2br("Encrypting email template variables...\r\n");
 $service->convert_email_template_to_openssl();
+echo nl2br("Done.\r\n");
+echo nl2br("Updating filter tags...\r\n");
+$service->update_filter_tag();
+echo nl2br("Done.\r\n");
+echo nl2br("Encrypting extension configurations...\r\n");
 $service->extension_config_to_openssl();
+echo nl2br("Done.\r\n");
 
 unset($service, $di);
