@@ -59,7 +59,8 @@ Some of the things to change in the theme files will include:
 - "sameas" to "same as"
 - "autoescape true js" to "autoescape "js""
 - "{%raw%} {{price}} {%/endraw%}" to " price|raw "
-- "{% filter markdown %}" to "{% apply markdown %}" 
+- "{% filter markdown %}" to "{% apply markdown %}"
+- "{% endfilter %}" to "{% endapply %}"
 
 When you experience a fatal error, set debug to true in bb-config.php to provide details about the error.
 
